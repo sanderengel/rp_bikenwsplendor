@@ -4,6 +4,8 @@ import networkx as nx
 from collections.abc import Iterator
 from scipy.sparse import csr_array
 
+from splendor.config import LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND
+
 
 class LoopData:
     """Container class to store loop data for a set of loops"""
@@ -28,6 +30,9 @@ class LoopData:
         self.n_loops = len(loop_ptr) - 1
         self.n_nodes = n_nodes
         self.n_edges = n_edges
+
+        # Number of nodes for loop i is loop_ptr[i+1] - loop_ptr[i]
+        self.loop_n_nodes = np.diff(self.loop_ptr)
 
         # Loop x edge incidence matrix
         self.M = csr_array((
@@ -69,7 +74,11 @@ def _get_loop_length(G: nx.Graph, c: list) -> float:
     return sum(G[u][v]["length_m"] for u, v in _get_cycle_node_pairs(c))
 
 
-def get_loops(G: nx.Graph, max_nodes: int, max_length_m: float) -> LoopData:
+def get_loops(
+    G: nx.Graph,
+    max_nodes: int = LOOP_NUMNODE_BOUND,
+    max_length_m: float = LOOP_LENGTH_BOUND
+) -> LoopData:
     """Get LoopData object from networkX graph."""
     # Store nodes and edges in concatenated arrays
     loop_nodes = []
