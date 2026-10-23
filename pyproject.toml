@@ -23,6 +23,9 @@ splendor = { path = ".", editable = true }
 lab = "jupyter lab"
 test = "pytest"
 
+[tool.pixi.activation.env]
+PYTHONPATH = "$PIXI_PROJECT_ROOT/src"
+
 [tool.pixi.dependencies]
 python = "3.12.*"
 geopandas = ">=1.2.0,<2"
