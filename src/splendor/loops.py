@@ -11,42 +11,42 @@ class LoopData:
     """Container class to store loop data for a set of loops"""
     def __init__(
         self,
-        loop_nodes: list,
-        loop_edges: list,
-        loop_lengths_m: list,
-        loop_ptr: list,
-        n_nodes: int,
-        n_edges: int,
+        nodes: list,
+        edges: list,
+        lengths_m: list,
+        ptr: list,
+        n_network_nodes: int,
+        n_network_edges: int,
     ) -> None:
         # Check IDs are 0...n-1
-        assert all(nid < n_nodes for nid in loop_nodes)
-        assert all(eid < n_edges for eid in loop_edges)
+        assert all(nid < n_network_nodes for nid in nodes)
+        assert all(eid < n_network_edges for eid in edges)
 
-        self.loop_nodes = np.array(loop_nodes, dtype=np.int32)
-        self.loop_edges = np.array(loop_edges, dtype=np.int32)
-        self.loop_lengths_m = np.array(loop_lengths_m, dtype=np.float64)
-        self.loop_ptr = np.array(loop_ptr, dtype=np.int64)
+        self.nodes = np.array(nodes, dtype=np.int32)
+        self.edges = np.array(edges, dtype=np.int32)
+        self.lengths_m = np.array(lengths_m, dtype=np.float64)
+        self.ptr = np.array(ptr, dtype=np.int64)
 
-        self.n_loops = len(loop_ptr) - 1
-        self.n_nodes = n_nodes
-        self.n_edges = n_edges
+        self.n_loops = len(ptr) - 1
+        self.n_network_nodes = n_network_nodes
+        self.n_network_edges = n_network_edges
 
-        # Number of nodes for loop i is loop_ptr[i+1] - loop_ptr[i]
-        self.loop_n_nodes = np.diff(self.loop_ptr)
+        # Number of nodes for loop i is ptr[i+1] - ptr[i]
+        self.sizes = np.diff(self.ptr)
 
         # Loop x edge incidence matrix
         self.M = csr_array((
-            np.ones(len(self.loop_edges), dtype=np.int8),
-            self.loop_edges, 
-            self.loop_ptr
-        ), shape=(self.n_loops, n_edges))
+            np.ones(len(self.edges), dtype=np.int8),
+            self.edges, 
+            self.ptr
+        ), shape=(self.n_loops, n_network_edges))
 
         # Loop x node incidence matrix
         self.N = csr_array((
-            np.ones(len(self.loop_nodes), dtype=np.int8),
-            self.loop_nodes, 
-            self.loop_ptr
-        ), shape=(self.n_loops, n_nodes))
+            np.ones(len(self.nodes), dtype=np.int8),
+            self.nodes, 
+            self.ptr
+        ), shape=(self.n_loops, n_network_nodes))
 
 
 def build_graph(nodes: gpd.GeoDataFrame, edges: gpd.GeoDataFrame) -> nx.Graph:
@@ -99,10 +99,10 @@ def get_loops(
 
     # Return as loop data object
     return LoopData(
-        loop_nodes=loop_nodes,
-        loop_edges=loop_edges,
-        loop_lengths_m=loop_lengths_m,
-        loop_ptr=loop_ptr,
-        n_nodes=G.number_of_nodes(), # Take from G to include nodes not in any loops
-        n_edges=G.number_of_edges()  # Take from G to include edges not in any loops
+        nodes=loop_nodes,
+        edges=loop_edges,
+        lengths_m=loop_lengths_m,
+        ptr=loop_ptr,
+        n_network_nodes=G.number_of_nodes(), # Take from G to include nodes not in any loops
+        n_network_edges=G.number_of_edges()  # Take from G to include edges not in any loops
     )

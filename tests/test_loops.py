@@ -20,7 +20,7 @@ def test_k3_graph():
     assert loops.n_loops == 1
 
     # Unit edge lengths, loops should have length 3
-    assert loops.loop_lengths_m[0] == 3
+    assert loops.lengths_m[0] == 3
 
 
 def test_k4_graph():
@@ -37,10 +37,7 @@ def test_k4_graph():
     np.testing.assert_array_equal(loops.M.sum(axis=0), [4] * 6)
 
     # Unit edge lengths so triangles have length 3, squares length 4
-    np.testing.assert_array_equal(
-        np.sort(loops.loop_lengths_m),
-        [3, 3, 3, 3, 4, 4, 4]
-    )
+    np.testing.assert_array_equal(np.sort(loops.lengths_m), [3, 3, 3, 3, 4, 4, 4])
 
 
 def test_small_max_length():
@@ -49,5 +46,5 @@ def test_small_max_length():
     loops = get_loops(G, max_length_m=3)
 
     assert loops.n_loops == 4
-    np.testing.assert_array_equal(loops.loop_lengths_m, [3] * 4)
-    np.testing.assert_array_equal(loops.loop_n_nodes, [3] * 4) # All 3-node loops
+    np.testing.assert_array_equal(loops.lengths_m, [3] * 4)
+    np.testing.assert_array_equal(loops.sizes, [3] * 4) # All 3-node loops
