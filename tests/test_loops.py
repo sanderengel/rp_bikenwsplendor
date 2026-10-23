@@ -1,7 +1,7 @@
 import numpy as np
 import networkx as nx
 
-from splendor.loops import get_loops
+from splendor.loops import LoopData, get_loops
 
 
 def _graph_with_attrs(G: nx.Graph, length_m: float = 1.) -> nx.Graph:
@@ -48,3 +48,19 @@ def test_small_max_length():
     assert loops.n_loops == 4
     np.testing.assert_array_equal(loops.lengths_m, [3] * 4)
     np.testing.assert_array_equal(loops.sizes, [3] * 4) # All 3-node loops
+
+
+def test_save_load_roundtrip(tmp_path):
+    """Loop data that is loaded should equal the original."""
+    G = _graph_with_attrs(nx.complete_graph(4))
+    loops_orig = get_loops(G, max_length_m=3)
+
+    path = tmp_path / "loops.npz"
+    loops_orig.save(path)
+    loops_loaded = LoopData.load(path)
+
+    for attr in ["nodes", "edges", "lengths_m", "ptr"]:
+        np.testing.assert_array_equal(getattr(loops_loaded, attr), getattr(loops_orig, attr))
+    
+    assert loops_loaded.n_network_nodes == loops_orig.n_network_nodes
+    assert loops_loaded.n_network_edges == loops_orig.n_network_edges

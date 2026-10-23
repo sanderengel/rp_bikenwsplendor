@@ -3,6 +3,8 @@ import geopandas as gpd
 import networkx as nx
 from collections.abc import Iterator
 from scipy.sparse import csr_array
+from pathlib import Path
+from typing import Self
 
 from splendor.config import LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND
 
@@ -18,10 +20,6 @@ class LoopData:
         n_network_nodes: int,
         n_network_edges: int,
     ) -> None:
-        # Check IDs are 0...n-1
-        assert all(nid < n_network_nodes for nid in nodes)
-        assert all(eid < n_network_edges for eid in edges)
-
         self.nodes = np.array(nodes, dtype=np.int32)
         self.edges = np.array(edges, dtype=np.int32)
         self.lengths_m = np.array(lengths_m, dtype=np.float64)
@@ -33,6 +31,10 @@ class LoopData:
 
         # Number of nodes for loop i is ptr[i+1] - ptr[i]
         self.sizes = np.diff(self.ptr)
+
+        # Check IDs are 0...n-1
+        assert self.nodes.max() < n_network_nodes or self.nodes.size == 0
+        assert self.edges.max() < n_network_edges or self.edges.size == 0
 
         # Loop x edge incidence matrix
         self.M = csr_array((
@@ -47,6 +49,31 @@ class LoopData:
             self.nodes, 
             self.ptr
         ), shape=(self.n_loops, n_network_nodes))
+
+    def save(self, path: str | Path) -> None:
+        """Save loop data."""
+        np.savez_compressed(
+            path,
+            nodes=self.nodes,
+            edges=self.edges,
+            lengths_m=self.lengths_m,
+            ptr=self.ptr,
+            n_network_nodes=self.n_network_nodes, # Stored as 0-d array
+            n_network_edges=self.n_network_edges, # Stored as 0-d array
+        )
+
+    @classmethod
+    def load(cls, path: str | Path) -> Self:
+        """Load loop data saved with LoopData.save."""
+        with np.load(path) as d:
+            return cls(
+                nodes=d["nodes"],
+                edges=d["edges"],
+                lengths_m=d["lengths_m"],
+                ptr=d["ptr"],
+                n_network_nodes=int(d["n_network_nodes"]), # Convert back from 0-d array
+                n_network_edges=int(d["n_network_edges"]), # Convert back from 0-d array
+            )
 
 
 def build_graph(nodes: gpd.GeoDataFrame, edges: gpd.GeoDataFrame) -> nx.Graph:
