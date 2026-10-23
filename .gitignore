@@ -17,3 +17,9 @@ __pycache__/
 
 # OS / local
 .DS_Store
+
+# Dev
+tester.*
+
+# Editors
+.vscode/
