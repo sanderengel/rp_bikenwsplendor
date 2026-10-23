@@ -1,3 +1,19 @@
 .env
 .venv
 data/
+
+# pixi environments
+.pixi/
+!.pixi/config.toml
+
+# Python
+__pychache__/
+*.py[cod]
+*.egg-info/
+
+# Tools
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / local
+.DS_Store
