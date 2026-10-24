@@ -88,12 +88,10 @@ def build_graph(nodes: gpd.GeoDataFrame, edges: gpd.GeoDataFrame) -> nx.Graph:
 
 
 def _get_cycle_node_pairs(c: list) -> Iterator[tuple[int, int]]:
-    n = len(c)
-    for i in range(n):
-        yield c[i], c[(i + 1) % n]
+    return zip(c, c[1:] + c[:1])
 
 
-def _get_loop_edge_ids(G: nx.Graph, c: list) -> list[int]:
+def get_loop_edge_ids(G: nx.Graph, c: list) -> list[int]:
     return [G[u][v]["edge_id"] for u, v in _get_cycle_node_pairs(c)]
 
 
@@ -120,7 +118,7 @@ def get_loops(
             continue
 
         loop_nodes.extend(c)
-        loop_edges.extend(_get_loop_edge_ids(G, c))
+        loop_edges.extend(get_loop_edge_ids(G, c))
         loop_lengths_m.append(loop_length_m)
         loop_ptr.append(loop_ptr[-1] + len(c))
 
