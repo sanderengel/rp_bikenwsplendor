@@ -1,5 +1,4 @@
 import numpy as np
-import networkx as nx
 
 from splendor.loops import LoopData, get_loops
 
