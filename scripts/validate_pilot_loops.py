@@ -68,3 +68,17 @@ order = [bwl_keys[k] for k in own_keys]
 bwl_len, bwl_slope100, bwl_poi = (np.array(x) for x in zip(*order))
 
 np.testing.assert_allclose(loops.lengths_m, bwl_len, rtol=1e6) # bikenwloops is float32
+
+# Attributes
+own_slope = loop_max(loops, edges.max_slope.to_numpy())
+# bikenwloops stores int(max_slope * 100) as uint16, we allow off-by-one from float rounding
+assert np.abs(np.floor(own_slope * 100) - bwl_slope100).max() <= 1
+
+own_poi = loop_poi_diversity(
+    loops,
+    edges.has_facility.to_numpy(),
+    edges.has_service.to_numpy(),
+    edges.has_attraction.to_numpy(),
+)
+np.testing.assert_array_equal(own_poi, bwl_poi)
+print("lengths, max slopes, POI diversity: identical")
