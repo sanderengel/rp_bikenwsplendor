@@ -5,8 +5,9 @@ import lzma
 import pickle
 from pathlib import Path
 from splendor.io import export_network
+from splendor.config import BIKENWLOOPS_DIR
 
-SRC = Path("../refs/bikenwloops/data/processed/pilot/network_preprocessed.xz")
+SRC = BIKENWLOOPS_DIR / "data/processed/pilot/network_preprocessed.xz"
 DST = Path("data/interim/pilot/network.gpkg")
 
 with lzma.open(SRC, "rb") as f:
