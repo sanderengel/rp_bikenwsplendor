@@ -18,7 +18,7 @@ loops = LoopData.load(OWN)
 
 
 # Load pilot census data from bikenwloops
-REF = BIKENWLOOPS_DIR / f"/data/processed/pilot/loopcensus_{LOOP_NUMNODE_BOUND}_maxlength{LOOP_LENGTH_BOUND}.pkl"
+REF = BIKENWLOOPS_DIR / f"data/processed/pilot/loopcensus_{LOOP_NUMNODE_BOUND}_maxlength{LOOP_LENGTH_BOUND}.pkl"
 
 with open(REF, "rb") as f:
     bwl_loops = pickle.load(f)
