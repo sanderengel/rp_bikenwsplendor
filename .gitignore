@@ -1,7 +1,6 @@
 .env
 .venv
-data
-data.nosync/
+data/
 
 # pixi environments
 .pixi/
