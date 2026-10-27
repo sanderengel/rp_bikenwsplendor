@@ -40,3 +40,8 @@ def basemap05_lu01_path(area: str) -> Path:
 
 def basemap05_main_types_path(area: str) -> Path:
     return INTERIM / area / "basemap05_main_types.tif"
+
+
+# Landuse
+def link_landuse_path(area: str, r: float) -> Path:
+    return PROCESSED / area / f"link_landuse_r{r}.csv"
