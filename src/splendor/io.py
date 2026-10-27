@@ -8,8 +8,8 @@ from shapely.geometry import Point
 from affine import Affine
 
 from splendor.paths import ensure_parent
+from splendor.config import EPSG
 
-EPSG = 25832
 DROP = {"geometry", "node_start", "node_end"} # stale ids from bikenwloops
 
 
