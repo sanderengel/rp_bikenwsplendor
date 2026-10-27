@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Self
 
 from splendor.config import LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND
+from splendor.paths import ensure_parent
 
 
 class LoopData:
@@ -52,6 +53,7 @@ class LoopData:
 
     def save(self, path: str | Path) -> None:
         """Save loop data."""
+        path = ensure_parent(path)
         np.savez_compressed(
             path,
             nodes=self.nodes,

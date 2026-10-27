@@ -3,11 +3,15 @@ import igraph as ig
 from pathlib import Path
 from shapely.geometry import Point
 
+from splendor.paths import ensure_parent
+
 CRS = 25832
 DROP = {"geometry", "node_start", "node_end"} # stale ids from bikenwloops
 
 
 def export_network(G: ig.Graph, path: str | Path) -> None:
+    path = ensure_parent(path)
+
     # Nodes, ids equal to igraph vertex index (u/v before)
     nodes = gpd.GeoDataFrame(
         {

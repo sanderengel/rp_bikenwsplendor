@@ -3,19 +3,20 @@ Export the bikenwloops pilot network to a GeoPackage
 """
 import lzma
 import pickle
-from pathlib import Path
 from splendor.io import export_network, load_network
-from splendor.config import BIKENWLOOPS_DIR
+from splendor.paths import bikenwloops_network_path, network_path
 
-SRC = BIKENWLOOPS_DIR / "data/processed/pilot/network_preprocessed.xz"
-DST = Path("data/interim/pilot/network.gpkg")
+STUDY_AREA = "pilot"
+SRC = bikenwloops_network_path(STUDY_AREA)
+DST = network_path(STUDY_AREA)
+
 
 with lzma.open(SRC, "rb") as f:
     G = pickle.load(f)
 
-DST.parent.mkdir(parents=True, exist_ok=True)
 export_network(G, DST)
 edges, nodes = load_network(DST)
+
 
 # Checks
 assert edges.edge_id.is_unique and nodes.node_id.is_unique

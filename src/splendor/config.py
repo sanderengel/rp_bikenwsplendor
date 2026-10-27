@@ -1,6 +1,4 @@
-from pathlib import Path
+# Modeling parameters
 
-BIKENWLOOPS_DIR = Path.home() / "dev/refs/bikenwloops"
-
-LOOP_NUMNODE_BOUND = 30
-LOOP_LENGTH_BOUND = 40000
+LOOP_NUMNODE_BOUND = 30 # Maximum number of nodes in a loop
+LOOP_LENGTH_BOUND = 40000 # Maximum total length of a loop in meters
