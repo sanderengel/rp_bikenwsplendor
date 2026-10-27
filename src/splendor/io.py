@@ -7,7 +7,17 @@ CRS = 25832
 DROP = {"geometry", "node_start", "node_end"} # stale ids from bikenwloops
 
 
-def export_network(G: ig.Graph, path: str | Path):
+def export_network(G: ig.Graph, path: str | Path) -> None:
+    # Nodes, ids equal to igraph vertex index (u/v before)
+    nodes = gpd.GeoDataFrame(
+        {
+            "node_id": range(G.vcount()),
+            **{a: G.vs[a] for a in G.vs.attributes() if a not in {"x", "y"}}
+        },
+        geometry=[Point(x, y) for x, y in zip(G.vs["x"], G.vs["y"])],
+        crs=CRS
+    )
+
     # Edges, these have own stable ids 0 to m-1, keep them for traceability
     e_attrs = {a: G.es[a] for a in G.es.attributes() if a not in DROP}
     edges = gpd.GeoDataFrame(
@@ -21,19 +31,8 @@ def export_network(G: ig.Graph, path: str | Path):
         crs=CRS,
     ).rename(columns={"weight": "length_m"})
 
-    # Nodes, ids equal to igraph vertex index (u/v before)
-    nodes = gpd.GeoDataFrame(
-        {
-            "node_id": range(G.vcount()),
-            **{a: G.vs[a] for a in G.vs.attributes() if a not in {"x", "y"}}
-        },
-        geometry=[Point(x, y) for x, y in zip(G.vs["x"], G.vs["y"])],
-        crs=CRS
-    )
-
-    edges.to_file(path, layer="edges", driver="GPKG")
     nodes.to_file(path, layer="nodes", driver="GPKG")
-    return edges, nodes
+    edges.to_file(path, layer="edges", driver="GPKG")
 
 
 def load_network(path: str | Path) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
