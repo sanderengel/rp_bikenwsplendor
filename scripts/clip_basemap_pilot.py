@@ -8,7 +8,6 @@ Writes to data/interim/pilot/:
 """
 import numpy as np
 from pathlib import Path
-import pandas as pd
 import pyogrio
 import rasterio
 from rasterio.windows import from_bounds
