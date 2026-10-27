@@ -1,11 +1,15 @@
+import numpy as np
 import geopandas as gpd
 import igraph as ig
+import rasterio
+from rasterio.crs import CRS
 from pathlib import Path
 from shapely.geometry import Point
+from affine import Affine
 
 from splendor.paths import ensure_parent
 
-CRS = 25832
+EPSG = 25832
 DROP = {"geometry", "node_start", "node_end"} # stale ids from bikenwloops
 
 
@@ -19,7 +23,7 @@ def export_network(G: ig.Graph, path: str | Path) -> None:
             **{a: G.vs[a] for a in G.vs.attributes() if a not in {"x", "y"}}
         },
         geometry=[Point(x, y) for x, y in zip(G.vs["x"], G.vs["y"])],
-        crs=CRS
+        crs=EPSG
     )
 
     # Edges, these have own stable ids 0 to m-1, keep them for traceability
@@ -32,7 +36,7 @@ def export_network(G: ig.Graph, path: str | Path) -> None:
             **{("orig_edge_id" if a == "edge_id" else a): vals for a, vals in e_attrs.items()}
         },
         geometry=G.es["geometry"],
-        crs=CRS,
+        crs=EPSG,
     ).rename(columns={"weight": "length_m"})
 
     nodes.to_file(path, layer="nodes", driver="GPKG")
@@ -44,3 +48,11 @@ def load_network(path: str | Path) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     nodes = gpd.read_file(path, layer="nodes")
     edges = gpd.read_file(path, layer="edges")
     return nodes, edges
+
+
+def load_raster(path: str | Path) -> tuple[np.ndarray, Affine, CRS]:
+    with rasterio.open(path) as src:
+        raster = src.read(1)      # 2D uint8 array of the first band
+        transform = src.transform # Affine mapping pixels to map coords
+        raster_crs = src.crs
+    return raster, transform, raster_crs
