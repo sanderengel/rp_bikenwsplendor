@@ -73,16 +73,16 @@ with rasterio.open(basemap05_lu01_path(STUDY_AREA), "w", **profile) as dst:
 main = lookup[data]
 with rasterio.open(basemap05_main_types_path(STUDY_AREA), "w", **(profile | {"dtype": "uint8"})) as dst:
     dst.write(main, 1)
-    dst.write_colormap(1, {i: (*rgb, 255) for i, _, rgb in [*MAIN_TYPES.values(), UNCLASSIFIED]})
+    dst.write_colormap(1, {i: (*rgb, 255) for i, _, _, rgb in [*MAIN_TYPES.values(), UNCLASSIFIED]})
 
 # Create legend txt file for QGIS
 with open(basemap05_main_types_path(STUDY_AREA).with_suffix("txt"), "w") as f:
     f.write("# QGIS Generated Color Map Export File\nINTERPOLATION:EXACT\n")
-    for i, name, (r, g, b) in [*MAIN_TYPES.values(), UNCLASSIFIED]:
+    for i, name, _, (r, g, b) in [*MAIN_TYPES.values(), UNCLASSIFIED]:
         f.write(f"{i},{r},{g},{b},255,{name}\n")
 
 # Print percentages
 counts = np.bincount(main.ravel(), minlength=14)
 print(f"Clipped {data.shape[1]}x{data.shape[0]} pixels")
-for i, name, _ in [*MAIN_TYPES.values(), UNCLASSIFIED]:
+for i, name, _, _ in [*MAIN_TYPES.values(), UNCLASSIFIED]:
     print(f"{i:2d} {name:35s} {counts[i] / counts[1:].sum():6.1%}")
