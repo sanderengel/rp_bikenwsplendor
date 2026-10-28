@@ -24,6 +24,7 @@ MAIN_TYPES = {
 UNCLASSIFIED = (13, "Terrestrial, not classified", "Unclassified", (130, 130, 130))
 ALL_TYPES = [*MAIN_TYPES.values(), UNCLASSIFIED]
 N_TYPES = len(ALL_TYPES)
+SHORT_NAMES = {t[0]: t[2] for t in ALL_TYPES}
 
 
 def get_link_corridors(edges: gpd.GeoDataFrame, r: float) -> gpd.GeoSeries:
