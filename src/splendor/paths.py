@@ -45,3 +45,8 @@ def basemap05_main_types_path(area: str) -> Path:
 # Landuse
 def link_landuse_path(area: str, r: float) -> Path:
     return PROCESSED / area / f"link_landuse_r{r}.csv"
+
+
+# Plots
+def link_landuse_plot_path(area: str, r: float) -> Path:
+    return ROOT / "plots" / area/ f"link_landuse_r{r}.png"
