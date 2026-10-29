@@ -8,3 +8,5 @@ CORRIDOR_RADIUS = 100 # Radius for link corridors in meters
 EPSG = 25832
 
 SEED = 70766
+
+STUDY_AREA = "pilot"

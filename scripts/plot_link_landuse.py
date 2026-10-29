@@ -1,9 +1,10 @@
-"""Generate plot of land use shares for pilot data."""
+"""Generate plot of land use shares for study area data."""
 import numpy as np
 import pandas as pd
 
 from splendor.config import CORRIDOR_RADIUS, SEED
 from splendor.io import load_network, load_raster
+from splendor.cli import get_study_area
 from splendor.landuse import get_link_corridors
 from splendor.plotting import plot_link_landuse_grid
 from splendor.paths import (
@@ -14,7 +15,7 @@ from splendor.paths import (
     network_path
 )
 
-STUDY_AREA = "pilot"
+STUDY_AREA = get_study_area()
 N_ROWS = 3
 N_COLS = 4
 N_LINKS = N_ROWS * N_COLS
@@ -35,7 +36,7 @@ edge_ids = np.sort(rng.choice(len(edges), size=N_LINKS, replace=False))
 fig = plot_link_landuse_grid(
     edge_ids, edges, corridors, shares, raster, transform,
     n_cols=N_COLS, 
-    title=f"Land use shares in {CORRIDOR_RADIUS} m corridors for {N_LINKS} random pilot links "
+    title=f"Land use shares in {CORRIDOR_RADIUS} m corridors for {N_LINKS} random {STUDY_AREA} links "
     f"(types below {MIN_SHARE:.0%} not shown)", 
     min_share=MIN_SHARE
 )

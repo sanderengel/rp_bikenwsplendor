@@ -1,17 +1,17 @@
 """
-Validate that the pilot loops census agrees with bikenwloops.
+Validate that the study area loops census agrees with bikenwloops.
 """
 import pickle
 import numpy as np
-from pathlib import Path
 from splendor.io import load_network
+from splendor.cli import get_study_area
 from splendor.paths import network_path, loops_path, bikenwloops_loopcensus_path
 from splendor.loops import LoopData, get_loop_edge_ids, build_graph
 from splendor.config import LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND
 from splendor.attributes import loop_max, loop_poi_diversity
 
-# Load own graph and pilot census data
-STUDY_AREA = "pilot"
+# Load own graph and census data
+STUDY_AREA = get_study_area()
 NETWORK = network_path(STUDY_AREA)
 OWN = loops_path(STUDY_AREA, LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND)
 nodes, edges = load_network(NETWORK)
@@ -19,7 +19,7 @@ G = build_graph(nodes, edges)
 loops = LoopData.load(OWN)
 
 
-# Load pilot census data from bikenwloops
+# Load census data from bikenwloops
 REF = bikenwloops_loopcensus_path(STUDY_AREA, LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND)
 
 with open(REF, "rb") as f:
