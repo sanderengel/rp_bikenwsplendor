@@ -5,20 +5,22 @@ import pickle
 import numpy as np
 from pathlib import Path
 from splendor.io import load_network
+from splendor.paths import network_path, loops_path, bikenwloops_loopcensus_path
 from splendor.loops import LoopData, get_loop_edge_ids, build_graph
-from splendor.config import BIKENWLOOPS_DIR, LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND
+from splendor.config import LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND
 from splendor.attributes import loop_max, loop_poi_diversity
 
 # Load own graph and pilot census data
-NETWORK = Path("data/interim/pilot/network.gpkg")
-OWN = Path(f"data/processed/pilot/loops_{LOOP_NUMNODE_BOUND}_{LOOP_LENGTH_BOUND}.npz")
+STUDY_AREA = "pilot"
+NETWORK = network_path(STUDY_AREA)
+OWN = loops_path(STUDY_AREA, LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND)
 nodes, edges = load_network(NETWORK)
 G = build_graph(nodes, edges)
 loops = LoopData.load(OWN)
 
 
 # Load pilot census data from bikenwloops
-REF = BIKENWLOOPS_DIR / f"data/processed/pilot/loopcensus_{LOOP_NUMNODE_BOUND}_maxlength{LOOP_LENGTH_BOUND}.pkl"
+REF = bikenwloops_loopcensus_path(STUDY_AREA, LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND)
 
 with open(REF, "rb") as f:
     bwl_loops = pickle.load(f)
