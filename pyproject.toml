@@ -22,6 +22,15 @@ splendor = { path = ".", editable = true }
 [tool.pixi.tasks]
 lab = "jupyter lab"
 test = "pytest"
+pipeline = """
+pytest
+&& python scripts/export_network.py
+&& python scripts/generate_loops.py
+&& python scripts/validate_loops.py
+&& python scripts/clip_basemap.py
+&& python scripts/compute_link_landuse.py
+&& python scripts/plot_link_landuse.py
+"""
 
 [tool.pixi.activation.env]
 PYTHONPATH = "$PIXI_PROJECT_ROOT/src"
