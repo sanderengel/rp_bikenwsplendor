@@ -29,7 +29,6 @@ pytest
 && python scripts/validate_loops.py
 && python scripts/clip_basemap.py
 && python scripts/compute_link_landuse.py
-&& python scripts/plot_link_landuse.py
 """
 
 [tool.pixi.activation.env]
