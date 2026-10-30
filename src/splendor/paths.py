@@ -51,5 +51,7 @@ def link_landuse_path(area: str, r: float) -> Path:
 
 
 # Plots
-def link_landuse_plot_path(area: str, r: float) -> Path:
-    return ROOT / "plots" / area/ f"link_landuse_r{r}.png"
+def link_landuse_plot_path(area: str, r: float, detail: str = "") -> Path:
+    if detail:
+        return ROOT / "plots" / area / f"link_landuse_{detail}_r{r}.png"
+    return ROOT / "plots" / area / f"link_landuse_r{r}.png"
