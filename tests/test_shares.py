@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from rasterio.transform import rowcol
 
-from splendor.landuse import get_link_corridors, get_corridor_shares, N_TYPES
+from splendor.landuse import get_link_strips, get_link_corridors, get_corridor_shares, N_TYPES, ROAD
 
 
 def test_shares_full_forest(half_raster, make_edges):
@@ -111,11 +111,12 @@ def test_shares_exclude_no_data(random_raster, make_edges):
 
 def test_shares_keep_index(random_raster, make_edges):
     """The corridor shares DataFrame should have one row per corridor with the corridors' index."""
+    r = 20
     edges = make_edges(
         [(100, 800), (200, 800)], # 100m
         [(500, 200), (500, 800)]  # 600m
     ).set_index(pd.Index([10, 20])) # Custom index to check that it carries over
-    corridors = get_link_corridors(edges, r=20)
+    corridors = get_link_corridors(edges, r)
 
     raster, transform = random_raster
     corridor_shares = get_corridor_shares(corridors, raster, transform, N_TYPES)
@@ -153,3 +154,105 @@ def test_shares_no_data_error(nodata_raster, make_edges):
     raster, transform = nodata_raster
     with pytest.raises(AssertionError):
         get_corridor_shares(corridors, raster, transform, N_TYPES)
+
+
+def test_shares_ignore_road_in_strip(road_raster, make_edges):
+    """A link on the road ignores the road is all forest."""
+    x, y = 500, 100
+    L = 600
+    r = 50
+    r_s = 15
+    edges = make_edges([(x, y), (x, y + L)]) # Vertical on the road column's left edge
+    corridors = get_link_corridors(edges, r)
+    strips = get_link_strips(edges, r_s)
+
+    raster, transform = road_raster
+    corridor_shares = get_corridor_shares(
+        corridors, raster, transform, N_TYPES,
+        strips=strips, strip_excluded_type=ROAD[0] 
+    )
+    row = corridor_shares.iloc[0]
+
+    assert row["share_4"] == 1.0
+    assert row[f"share_{ROAD[0]}"] == 0
+
+
+def test_shares_keep_road_outside_strip(road_raster, make_edges):
+    """A link 30 m from the road keeps it: the road is 1 of the corridor's 10 pixel columns."""
+    x, y = 470, 100
+    L = 600
+    r = 50
+    r_s = 15
+    edges = make_edges([(x, y), (x, y + L)]) # Vertical 30 m left of the road column
+    corridors = get_link_corridors(edges, r)
+    strips = get_link_strips(edges, r_s)
+
+    raster, transform = road_raster
+    corridor_shares = get_corridor_shares(
+        corridors, raster, transform, N_TYPES,
+        strips=strips, strip_excluded_type=ROAD[0] 
+    )
+    row = corridor_shares.iloc[0]
+
+    assert row[f"share_{ROAD[0]}"] == pytest.approx(0.1)
+    assert row["share_4"] == pytest.approx(0.9)
+
+
+def test_shares_strip_and_rest_cover_corridor(random_raster, make_edges):
+    """
+    With strips but an excluded type that doesn't occur in the raster, nothing is dropped,
+    so the result equals the one without strips, i.e., strip + rest pixels are exactly the corridor's.
+    """
+    r = 37
+    r_s = 12
+    edges = make_edges(
+        [(123.4, 217.9), (561.3, 688.2)], # Diagonal, off the pixel grid
+        [(250, 100), (450, 100)]          # Horizontal
+    )
+    corridors = get_link_corridors(edges, r)
+    strips = get_link_strips(edges, r_s)
+
+    raster, transform = random_raster
+    absent_type = N_TYPES + 1 # Random raster only holds values between 0 and N_TYPES
+    assert not (raster == absent_type).any(), "test needs a type that isn't in the raster"
+
+    without_strips = get_corridor_shares(corridors, raster, transform, N_TYPES)
+    with_strips = get_corridor_shares(
+        corridors, raster, transform, N_TYPES, 
+        strips=strips, strip_excluded_type=absent_type
+    )
+
+    pd.testing.assert_frame_equal(with_strips, without_strips)
+
+
+def test_shares_strips_without_excluded_type_error(half_raster, make_edges):
+    """Strips without a type to exclude should raise a ValueError."""
+    x, y = 250, 100
+    L = 200
+    r = 20
+    r_s = 10
+    edges = make_edges([(x, y), (x + L, y)])
+    corridors = get_link_corridors(edges, r)
+    strips = get_link_strips(edges, r_s)
+
+    raster, transform = half_raster
+    with pytest.raises(ValueError):
+        get_corridor_shares(corridors, raster, transform, N_TYPES, strips=strips)
+
+
+def test_shares_strips_index_mismatch_error(half_raster, make_edges):
+    """Strips whose index doesn't match the corridors' should raise a ValueError."""
+    x, y = 250, 100
+    L = 200
+    r = 20
+    r_s = 10
+    edges = make_edges([(x, y), (x + L, y)])
+    corridors = get_link_corridors(edges, r)
+    strips = get_link_strips(edges, r_s).set_axis([99]) # Different index
+
+    raster, transform = half_raster
+    with pytest.raises(ValueError):
+        get_corridor_shares(
+            corridors, raster, transform, N_TYPES, 
+            strips=strips, strip_excluded_type=4
+        )
