@@ -4,7 +4,7 @@ import geopandas as gpd
 from affine import Affine
 from rasterio.features import geometry_mask
 from rasterio import windows
-from shapely import LineString, MultiPolygon, Polygon
+from shapely import LineString, MultiPolygon, Polygon, Geometry
 from shapely.ops import substring, unary_union
 
 
@@ -100,6 +100,29 @@ def get_link_corridors(edges: gpd.GeoDataFrame, r: float) -> gpd.GeoSeries:
     )
 
 
+def get_pixel_values(geom: Geometry, raster: np.ndarray, transform: Affine) -> np.ndarray:
+    """Return the raster values of all pixels whose center lies inside the geom."""
+    # Build pixel window around the geom
+    window = (
+        windows.from_bounds(*geom.bounds, transform=transform)
+        .round_offsets().round_lengths() # Snap to whole pixels
+    )
+    window_values = raster[window.toslices()]
+
+    # Geotransform of the window (same pixel size with origin shifted to the window's corner)
+    window_transform = windows.transform(window, transform)
+
+    mask = geometry_mask(
+        [geom], # List of geometries, here is a single geom
+        out_shape=window_values.shape,
+        transform=window_transform,
+        invert=True # True for pixels whose centre is in the geom
+    )
+
+    # Get pixel counts per type inside the geom
+    return window_values[mask]
+
+
 def get_corridor_shares(
     corridors: gpd.GeoSeries,
     raster: np.ndarray,
@@ -113,25 +136,7 @@ def get_corridor_shares(
     counts = np.zeros((len(corridors), n_types + 1), dtype=np.int64)
 
     for i, corridor in enumerate(corridors):
-        # Build pixel window around the corridor
-        window = (
-            windows.from_bounds(*corridor.bounds, transform=transform)
-            .round_offsets().round_lengths() # Snap to whole pixels
-        )
-        window_values = raster[window.toslices()]
-
-        # Geotransform of the window (same pixel size with origin shifted to the window's corner)
-        window_transform = windows.transform(window, transform)
-
-        mask = geometry_mask(
-            [corridor], # List of geometries, here is a single corridor
-            out_shape=window_values.shape,
-            transform=window_transform,
-            invert=True # True for pixels whose centre is in the corridor
-        )
-
-        # Get pixel counts per type inside the corridor
-        values = window_values[mask]
+        values = get_pixel_values(corridor, raster, transform)
         counts[i] = np.bincount(values, minlength=n_types + 1)
 
     n_pixels = counts[:, 1:].sum(axis=1)       # Exclude no data (type 0)
