@@ -3,8 +3,8 @@ Clip Basemap05 (lu_01, 2024) to the study area and make a styled main-type map.
 
 Writes to data/interim/<STUDY_AREA>/:
 - basemap05_lu01.tif: original pixel values, clipped (for analysis)
-- basemap05_main_types.tif: pixels grouped into main ecosystem types, with colours (for viewing)
-- basemap05_main_types.csv: legend
+- basemap05_main_types.tif: pixels grouped into main ecosystem types, with colors (for viewing)
+- basemap05_main_types.txt: legend
 """
 import numpy as np
 import pyogrio
@@ -13,7 +13,7 @@ from rasterio.windows import from_bounds
 
 from splendor.io import load_network
 from splendor.cli import get_study_area
-from splendor.landuse import MAIN_TYPES, UNCLASSIFIED
+from splendor.landuse import ALL_TYPES, N_TYPES, MAIN_TYPES, UNCLASSIFIED, ROAD_CODE, ROAD
 from splendor.paths import (
     network_path,
     BASEMAP05_LU01_RAW, BASEMAP05_LU01_VAT, # SRC
@@ -28,11 +28,17 @@ BUFFER_M = 1000 # Margin around the network's bounding box
 
 # Value: main type lookup from the raster attribute table
 vat = pyogrio.read_dataframe(BASEMAP05_LU01_VAT)
-prefix = (vat["C_26"].astype(int) // 1000).to_numpy() # E.g., 104200 -> 104
+codes = vat["C_26"].astype(int).to_numpy()
 # Position v holds the main-type id for pixel value v
 lookup = np.zeros(int(vat["Value"].max()) + 1, dtype=np.uint8)
-for value, p in zip(vat["Value"].to_numpy(), prefix):
-    lookup[value] = MAIN_TYPES[p][0] if p in MAIN_TYPES else UNCLASSIFIED[0]
+for val, code in zip(vat["Value"].to_numpy(), codes):
+    p = code // 1000 # E.g., 104200 -> 104
+    if code == ROAD_CODE:
+        lookup[val] = ROAD[0]
+    elif p in MAIN_TYPES:
+        lookup[val] = MAIN_TYPES[p][0]
+    else:
+        lookup[val] = UNCLASSIFIED[0]
 
 
 # Clip window around the network
@@ -74,16 +80,16 @@ with rasterio.open(basemap05_lu01_path(STUDY_AREA), "w", **profile) as dst:
 main = lookup[data]
 with rasterio.open(basemap05_main_types_path(STUDY_AREA), "w", **(profile | {"dtype": "uint8"})) as dst:
     dst.write(main, 1)
-    dst.write_colormap(1, {i: (*rgb, 255) for i, _, _, rgb in [*MAIN_TYPES.values(), UNCLASSIFIED]})
+    dst.write_colormap(1, {i: (*rgb, 255) for i, _, _, rgb in ALL_TYPES})
 
 # Create legend txt file for QGIS
 with open(basemap05_main_types_path(STUDY_AREA).with_suffix(".txt"), "w") as f:
     f.write("# QGIS Generated Color Map Export File\nINTERPOLATION:EXACT\n")
-    for i, name, _, (r, g, b) in [*MAIN_TYPES.values(), UNCLASSIFIED]:
+    for i, name, _, (r, g, b) in ALL_TYPES:
         f.write(f"{i},{r},{g},{b},255,{name}\n")
 
 # Print percentages
-counts = np.bincount(main.ravel(), minlength=14)
+counts = np.bincount(main.ravel(), minlength=N_TYPES + 1)
 print(f"Clipped {data.shape[1]}x{data.shape[0]} pixels")
-for i, name, _, _ in [*MAIN_TYPES.values(), UNCLASSIFIED]:
+for i, name, _, _ in ALL_TYPES:
     print(f"{i:2d} {name:35s} {counts[i] / counts[1:].sum():6.1%}")

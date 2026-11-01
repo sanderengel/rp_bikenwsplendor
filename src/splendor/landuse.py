@@ -25,7 +25,12 @@ MAIN_TYPES = {
     112: (12, "Sea", "Sea", (30, 70, 160))
 }
 UNCLASSIFIED = (13, "Terrestrial, not classified", "Unclassified", (130, 130, 130))
-ALL_TYPES = [*MAIN_TYPES.values(), UNCLASSIFIED]
+
+# Roads and rail are split out of settlement by their full C_26 code
+ROAD_CODE = 101301
+ROAD = (14, "Road and rail networks", "Road/rail", (70, 70, 70))
+
+ALL_TYPES = [*MAIN_TYPES.values(), UNCLASSIFIED, ROAD]
 N_TYPES = len(ALL_TYPES)
 SHORT_NAMES = {t[0]: t[2] for t in ALL_TYPES}
 
