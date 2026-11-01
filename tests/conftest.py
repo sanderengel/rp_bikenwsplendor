@@ -9,7 +9,7 @@ from typing import Callable
 
 from splendor.config import EPSG, SEED
 from splendor.loops import LoopData, get_loops
-from splendor.landuse import N_TYPES
+from splendor.landuse import N_TYPES, ROAD
 
 # Raster constants
 GRID_SIZE = 100 # Pixels per side
@@ -63,7 +63,7 @@ def _grid_transform() -> Affine:
     )
 
 @pytest.fixture
-def half_raster() -> tuple[np.array, Affine]:
+def half_raster() -> tuple[np.ndarray, Affine]:
     """
     100x100 10m raster array with half forest values and half cropland values, 
     and Affine transform object.
@@ -76,7 +76,7 @@ def half_raster() -> tuple[np.array, Affine]:
 
 
 @pytest.fixture
-def random_raster() -> tuple[np.array, Affine]:
+def random_raster() -> tuple[np.ndarray, Affine]:
     """100x100 10m raster array with random values, and Affine transform object."""
     d = 100
     rng = np.random.default_rng(SEED)
@@ -85,7 +85,7 @@ def random_raster() -> tuple[np.array, Affine]:
 
 
 @pytest.fixture
-def nodata_raster() -> tuple[np.array, Affine]:
+def nodata_raster() -> tuple[np.ndarray, Affine]:
     """100x100 10m raster array with all empty values, and Affine transform object."""
     d = 100
     raster = np.zeros((d, d), dtype=np.uint8)
