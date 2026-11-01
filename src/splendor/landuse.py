@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -102,11 +103,19 @@ def get_link_corridors(edges: gpd.GeoDataFrame, r: float) -> gpd.GeoSeries:
 
 def get_pixel_values(geom: Geometry, raster: np.ndarray, transform: Affine) -> np.ndarray:
     """Return the raster values of all pixels whose center lies inside the geom."""
-    # Build pixel window around the geom
-    window = (
-        windows.from_bounds(*geom.bounds, transform=transform)
-        .round_offsets().round_lengths() # Snap to whole pixels
-    )
+    # Build pixel window around the geom, snapped outward to whole pixels so that
+    # every pixel touched by the bounds is included
+    bounds_window = windows.from_bounds(*geom.bounds, transform=transform)
+    r_start = math.floor(bounds_window.row_off)
+    c_start = math.floor(bounds_window.col_off)
+    r_stop = math.ceil(bounds_window.row_off + bounds_window.height)
+    c_stop = math.ceil(bounds_window.col_off + bounds_window.width)
+
+    assert_error_msg = "geom extends beyond the raster"
+    assert r_start >= 0 and c_start >= 0, assert_error_msg
+    assert r_stop <= raster.shape[0] and c_stop <= raster.shape[1], assert_error_msg
+
+    window = windows.Window.from_slices((r_start, r_stop), (c_start, c_stop))
     window_values = raster[window.toslices()]
 
     # Geotransform of the window (same pixel size with origin shifted to the window's corner)
@@ -116,10 +125,9 @@ def get_pixel_values(geom: Geometry, raster: np.ndarray, transform: Affine) -> n
         [geom], # List of geometries, here is a single geom
         out_shape=window_values.shape,
         transform=window_transform,
-        invert=True # True for pixels whose centre is in the geom
+        invert=True # True for pixels whose center is in the geom
     )
 
-    # Get pixel counts per type inside the geom
     return window_values[mask]
 
 
