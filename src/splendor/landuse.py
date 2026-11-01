@@ -106,6 +106,11 @@ def get_link_corridors(edges: gpd.GeoDataFrame, r: float) -> gpd.GeoSeries:
     )
 
 
+def get_link_strips(edges: gpd.GeoDataFrame, r: float) -> gpd.GeoSeries:
+    """Return a strip of all points within distance r of each link. Same index and CRS as the edges."""
+    return edges.geometry.buffer(r)
+
+
 def get_bounds_window(
         bounds: tuple[float, float, float, float], 
         transform: Affine, 
@@ -151,16 +156,32 @@ def get_corridor_shares(
     corridors: gpd.GeoSeries,
     raster: np.ndarray,
     transform: Affine, 
-    n_types: int
+    n_types: int,
+    strips: gpd.GeoSeries | None = None,
+    strip_excluded_type: int | None = None
 ) -> pd.DataFrame:
     """
     Return the pixel value shares for each corridor from the raster data.
     """
+    if strips is not None:
+        if strip_excluded_type is None:
+            raise ValueError("strips given without a type to exclude")
+        if not strips.index.equals(corridors.index):
+            raise ValueError("strips must have the same index as the corridors")
+
     # Initialize counts, +1 type so column 0 represents no data
     counts = np.zeros((len(corridors), n_types + 1), dtype=np.int64)
 
     for i, corridor in enumerate(corridors):
-        values = get_pixel_values(corridor, raster, transform)
+        if strips is None:
+            values = get_pixel_values(corridor, raster, transform)
+        else:
+            strip = strips.iloc[i]
+            # Split the corridor into the part outside and inside the strip
+            rest_values = get_pixel_values(corridor.difference(strip), raster, transform)
+            strip_values = get_pixel_values(corridor.intersection(strip), raster, transform)
+            strip_values = strip_values[strip_values != strip_excluded_type]
+            values = np.concatenate([rest_values, strip_values])
         counts[i] = np.bincount(values, minlength=n_types + 1)
 
     n_pixels = counts[:, 1:].sum(axis=1)       # Exclude no data (type 0)
