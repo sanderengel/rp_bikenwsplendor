@@ -139,7 +139,6 @@
         <paletteEntry alpha="255" color="#aadc78" label="Grassland" value="3"/>
         <paletteEntry alpha="255" color="#287832" label="Forest" value="4"/>
         <paletteEntry alpha="255" color="#965aa0" label="Heathland and shrub" value="5"/>
-        <paletteEntry alpha="255" color="#c8c8be" label="Sparsely vegetated" value="6"/>
         <paletteEntry alpha="255" color="#78aaa0" label="Mires fens and bogs" value="7"/>
         <paletteEntry alpha="255" color="#3c78dc" label="Rivers" value="8"/>
         <paletteEntry alpha="255" color="#3c78dc" label="Lakes" value="9"/>
@@ -147,6 +146,7 @@
         <paletteEntry alpha="255" color="#f0c8a0" label="Coast (dunes beaches saltmarsh)" value="11"/>
         <paletteEntry alpha="255" color="#1e46a0" label="Sea" value="12"/>
         <paletteEntry alpha="255" color="#828282" label="Terrestrial not classified" value="13"/>
+        <paletteEntry alpha="255" color="#464646" label="Road and rail networks" value="14"/>
       </colorPalette>
       <colorramp name="[source]" type="randomcolors">
         <Option/>
