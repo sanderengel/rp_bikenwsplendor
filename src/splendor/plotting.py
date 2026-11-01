@@ -11,7 +11,7 @@ from shapely.geometry import box
 from affine import Affine
 from typing import Sequence
 
-from splendor.landuse import ALL_TYPES, N_TYPES, SHORT_NAMES
+from splendor.landuse import get_bounds_window, ALL_TYPES, N_TYPES, SHORT_NAMES
 
 
 def _landuse_colormap() -> tuple[list[tuple[float, ...]], ListedColormap, BoundaryNorm]:
@@ -45,9 +45,8 @@ def plot_landuse_map(
     _, cmap, norm = _landuse_colormap()
 
     # Raster window around the corridor
-    minx, miny, maxx, maxy = get_map_extent(corridor, margin)
-    window = windows.from_bounds(minx, miny, maxx, maxy, transform=transform)
-    window = window.round_offsets().round_lengths()
+    map_extent = get_map_extent(corridor, margin)
+    window = get_bounds_window(map_extent, transform, raster.shape)
     left, bottom, right, top = windows.bounds(window, transform)
     ax.imshow(
         raster[window.toslices()], cmap=cmap, norm=norm, 
