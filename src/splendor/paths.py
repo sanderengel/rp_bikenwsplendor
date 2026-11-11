@@ -10,7 +10,8 @@ def ensure_parent(path: str | Path) -> Path:
 
 
 # Reference
-BIKENWLOOPS_DIR = Path.home() / "dev/refs/bikenwloops"
+REFS_DIR = Path.home() / "dev/refs/"
+BIKENWLOOPS_DIR = REFS_DIR / "bikenwloops"
 
 def bikenwloops_network_path(area: str) -> Path:
     return BIKENWLOOPS_DIR / "data/processed" / area / "network_preprocessed.xz"
@@ -18,18 +19,28 @@ def bikenwloops_network_path(area: str) -> Path:
 def bikenwloops_loopcensus_path(area: str, max_nodes: int, max_length_m: int) -> Path:
     return BIKENWLOOPS_DIR / "data/processed" / area / f"loopcensus_{max_nodes}_maxlength{max_length_m}.pkl"
 
+BIKENODEPLANNER_DIR = REFS_DIR / "bike-node-planner-data-denmark"
+
+def bikenodeplanner_landuse_path(code: str) -> Path:
+    return BIKENODEPLANNER_DIR / f"data/polygon/{code}/land_anvendelse.gpkg"
+
 
 # Data
 DATA = ROOT / "data"
+
 RAW = DATA / "raw"
 INTERIM = DATA / "interim"
 PROCESSED = DATA / "processed"
+EXP = DATA / "exp"
 
 def network_path(area: str) -> Path:
     return INTERIM / area / "network.gpkg"
 
 def loops_path(area: str, max_nodes: int, max_length_m: int) -> Path:
     return PROCESSED / area / f"loops_{max_nodes}_{max_length_m}.npz"
+
+def landuse_polygon_gaps_path(area: str) -> Path:
+    return EXP / area / "landuse_polygon_gaps.gpkg"
 
 
 # Basemap05 raw
