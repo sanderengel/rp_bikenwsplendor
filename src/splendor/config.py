@@ -13,3 +13,7 @@ SEED = 70766
 STUDY_AREA = "pilot"
 
 EXCLUDED_TYPES = (13,) # 13 is UNCLASSIFIED (see src/splendor/landuse.py)
+
+DIVERSITY_MEASURES = ("shannon", "inverse_simpson", "richness") # See src/splendor/score.py for supported functions
+
+RICHNESS_MIN_SHARE = .1
