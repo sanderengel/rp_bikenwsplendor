@@ -3,8 +3,16 @@ import numpy as np
 import pandas as pd
 from rasterio.transform import rowcol
 
-from splendor.landuse import get_link_strips, get_link_corridors, get_corridor_shares, N_TYPES, ROAD
-
+from splendor.landuse import (
+    get_link_strips,
+    get_link_corridors,
+    get_share_column_name,
+    get_corridor_shares,
+    get_shares_array,
+    N_TYPES,
+    ROAD,
+    UNCLASSIFIED
+)
 
 def test_shares_full_forest(half_raster, make_edges):
     "A line fully in forest area (code 4) should have 'share_4' == 1.0."
@@ -17,9 +25,10 @@ def test_shares_full_forest(half_raster, make_edges):
     raster, transform = half_raster
     corridor_shares = get_corridor_shares(corridors, raster, transform, N_TYPES)
     row = corridor_shares.iloc[0]
+    share4_colname = get_share_column_name(4)
 
-    assert row["share_4"] == 1.0
-    assert (row.drop(["n_pixels", "share_4"]) == 0).all()
+    assert row[share4_colname] == 1.0
+    assert (get_shares_array(row.drop([share4_colname])) == 0).all()
 
 
 def test_shares_on_boundary(half_raster, make_edges):
@@ -36,10 +45,12 @@ def test_shares_on_boundary(half_raster, make_edges):
     raster, transform = half_raster
     corridor_shares = get_corridor_shares(corridors, raster, transform, N_TYPES)
     row = corridor_shares.iloc[0]
+    share4_colname = get_share_column_name(4)
+    share2_colname = get_share_column_name(2)
 
-    assert row["share_4"] == 0.5
-    assert row["share_2"] == 0.5
-    assert (row.drop(["n_pixels", "share_2", "share_4"]) == 0).all()
+    assert row[share4_colname] == 0.5
+    assert row[share2_colname] == 0.5
+    assert (get_shares_array(row.drop([share2_colname, share4_colname])) == 0).all()
 
 
 def test_shares_pixel_count(half_raster, make_edges):
@@ -72,7 +83,7 @@ def test_shares_sum(random_raster, make_edges):
     
     raster, transform = random_raster
     corridor_shares = get_corridor_shares(corridors, raster, transform, N_TYPES)
-    row_sums = corridor_shares.drop(columns="n_pixels").sum(axis=1)
+    row_sums = get_shares_array(corridor_shares).sum(axis=1)
 
     np.testing.assert_allclose(row_sums, 1.0)
 
@@ -105,8 +116,9 @@ def test_shares_exclude_no_data(random_raster, make_edges):
     expected_shares = np.bincount(valid, minlength=N_TYPES + 1)[1:] / valid.size
 
     assert row["n_pixels"] == valid.size
-    np.testing.assert_allclose(row.drop("n_pixels").to_numpy(dtype=float), expected_shares)
-    assert row.drop("n_pixels").sum() == pytest.approx(1)
+    corridor_shares_arr = get_shares_array(row)
+    np.testing.assert_allclose(corridor_shares_arr, expected_shares)
+    assert corridor_shares_arr.sum() == pytest.approx(1)
 
 
 def test_shares_keep_index(random_raster, make_edges):
@@ -128,8 +140,8 @@ def test_shares_keep_index(random_raster, make_edges):
 
 def test_shares_columns(half_raster, make_edges):
     """
-    The corridor shares DataFrame should contain columns 'n_pixels' followed by 'share_1' ... 'share_N',
-    with all types present even when their share is 0.
+    The corridor shares DataFrame should contain columns 'n_pixels' and 'n_excluded', 
+    followed by 'share_1' ... 'share_N', with all types present even when their share is 0.
     """
     x, y = 250, 100
     L = 200
@@ -140,7 +152,9 @@ def test_shares_columns(half_raster, make_edges):
     raster, transform = half_raster
     corridor_shares = get_corridor_shares(corridors, raster, transform, N_TYPES)
 
-    assert corridor_shares.columns.to_list() == ["n_pixels"] + [f"share_{k}" for k in range(1, N_TYPES + 1)]
+    # Testing the schema itself, so we don't use get_shares_array or get_share_column_name
+    share_column_names = [f"share_{k}" for k in range(1, N_TYPES + 1)]
+    assert corridor_shares.columns.to_list() == ["n_pixels", "n_excluded"] + share_column_names
 
 
 def test_shares_no_data_error(nodata_raster, make_edges):
@@ -173,8 +187,8 @@ def test_shares_ignore_road_in_strip(road_raster, make_edges):
     )
     row = corridor_shares.iloc[0]
 
-    assert row["share_4"] == 1.0
-    assert row[f"share_{ROAD[0]}"] == 0
+    assert row[get_share_column_name(4)] == 1.0
+    assert row[get_share_column_name(ROAD[0])] == 0
 
 
 def test_shares_keep_road_outside_strip(road_raster, make_edges):
@@ -194,8 +208,8 @@ def test_shares_keep_road_outside_strip(road_raster, make_edges):
     )
     row = corridor_shares.iloc[0]
 
-    assert row[f"share_{ROAD[0]}"] == pytest.approx(0.1)
-    assert row["share_4"] == pytest.approx(0.9)
+    assert row[get_share_column_name(4)] == pytest.approx(0.9)
+    assert row[get_share_column_name(ROAD[0])] == pytest.approx(0.1)
 
 
 def test_shares_strip_and_rest_cover_corridor(random_raster, make_edges):

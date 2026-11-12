@@ -2,6 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+from typing import Sequence
 from affine import Affine
 from rasterio.features import geometry_mask
 from rasterio import windows
@@ -34,9 +35,10 @@ ALL_TYPES = [*MAIN_TYPES.values(), UNCLASSIFIED, ROAD]
 N_TYPES = len(ALL_TYPES)
 SHORT_NAMES = {t[0]: t[2] for t in ALL_TYPES}
 
-
 CUT_EPS = 1.0        # Meters, cut disc slightly larger than r such that no sliver of the round cap survives
 MIN_PART_AREA = 10.0 # Square meters, leftover fragments smaller than this are dropped
+
+SHARE_PREFIX = "share_"
 
 
 def _outward_direction(line: LineString, at_start: bool, s: float) -> tuple[np.ndarray, np.ndarray]:
@@ -152,17 +154,27 @@ def get_pixel_values(geom: Geometry, raster: np.ndarray, transform: Affine) -> n
     return window_values[mask]
 
 
+def get_share_column_name(k: int) -> str:
+    return SHARE_PREFIX + str(k)
+
+
 def get_corridor_shares(
     corridors: gpd.GeoSeries,
     raster: np.ndarray,
     transform: Affine, 
     n_types: int,
     strips: gpd.GeoSeries | None = None,
-    strip_excluded_type: int | None = None
+    strip_excluded_type: int | None = None,
+    excluded_types: Sequence[int] = ()
 ) -> pd.DataFrame:
     """
     Return the pixel value shares for each corridor from the raster data.
+    Treat types in 'excluded_types' as no data by leaving them out of the shares,
+    though their pixels are counted in the column 'n_excluded'.
     """
+    excluded_types = np.unique(np.asarray(excluded_types, dtype=int))
+    if ((excluded_types < 1) | (excluded_types > n_types)).any():
+        raise ValueError(f"excluded types must be in 1..{n_types}")
     if strips is not None:
         if strip_excluded_type is None:
             raise ValueError("strips given without a type to exclude")
@@ -184,14 +196,25 @@ def get_corridor_shares(
             values = np.concatenate([rest_values, strip_values])
         counts[i] = np.bincount(values, minlength=n_types + 1)
 
-    n_pixels = counts[:, 1:].sum(axis=1)       # Exclude no data (type 0)
-    assert (n_pixels > 0).all(), "corridor with no land use pixels"
-    shares = counts[:, 1:] / n_pixels[:, None] # Normalize each row
+    kept = np.ones(n_types + 1, dtype=bool)
+    kept[0] = False        # No data
+    kept[excluded_types] = False # Excluded
 
+    n_pixels = counts[:, kept].sum(axis=1)
+    assert (n_pixels > 0).all(), "corridor with no land use pixels"
+    shares = counts[:, kept] / n_pixels[:, None] # Normalize each row
+
+    kept_types = np.flatnonzero(kept)
     corridor_shares = pd.DataFrame(
         shares,
-        columns = [f"share_{k}" for k in range(1, n_types + 1)],
+        columns = [get_share_column_name(k) for k in kept_types],
         index = corridors.index
     )
     corridor_shares.insert(0, "n_pixels", n_pixels)
+    corridor_shares.insert(1, "n_excluded", counts[:, excluded_types].sum(axis=1))
     return corridor_shares
+
+
+def get_shares_array(shares: pd.DataFrame | pd.Series) -> np.ndarray:
+    """Return array of only share columns, stripping identifiers and aggregate columns."""
+    return shares.filter(regex=f"^{SHARE_PREFIX}").to_numpy()
