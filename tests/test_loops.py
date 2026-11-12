@@ -1,6 +1,6 @@
 import numpy as np
 
-from splendor.loops import LoopData, get_loops
+from splendor.loops.census import LoopData, get_loops
 
 
 def test_k3_graph(k3_loops):

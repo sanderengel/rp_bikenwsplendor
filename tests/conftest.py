@@ -8,7 +8,7 @@ from shapely.geometry import LineString
 from typing import Callable
 
 from splendor.config import EPSG, SEED
-from splendor.loops import LoopData, get_loops
+from splendor.loops.census import LoopData, get_loops
 from splendor.landuse.types import N_TYPES, ROAD
 
 # Raster constants

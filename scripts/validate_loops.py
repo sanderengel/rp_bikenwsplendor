@@ -6,9 +6,9 @@ import numpy as np
 from splendor.io import load_network
 from splendor.cli import get_study_area
 from splendor.paths import network_path, loops_path, bikenwloops_loopcensus_path
-from splendor.loops import LoopData, get_loop_edge_ids, build_graph
 from splendor.config import LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND
-from splendor.attributes import loop_max, loop_poi_diversity
+from splendor.loops.census import LoopData, get_loop_edge_ids, build_graph
+from splendor.loops.attributes import loop_max, loop_poi_diversity
 
 # Load own graph and census data
 STUDY_AREA = get_study_area()

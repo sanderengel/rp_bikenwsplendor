@@ -5,7 +5,7 @@ import time
 from splendor.io import load_network
 from splendor.cli import get_study_area
 from splendor.paths import network_path, loops_path
-from splendor.loops import build_graph, get_loops
+from splendor.loops.census import build_graph, get_loops
 from splendor.config import LOOP_NUMNODE_BOUND, LOOP_LENGTH_BOUND
 
 STUDY_AREA = get_study_area()

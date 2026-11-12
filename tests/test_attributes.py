@@ -1,5 +1,5 @@
 import numpy as np
-from splendor.attributes import loop_sum, loop_max, loop_poi_diversity
+from splendor.loops.attributes import loop_sum, loop_max, loop_poi_diversity
 
 
 def test_loop_sum_equals_length(k4_loops):

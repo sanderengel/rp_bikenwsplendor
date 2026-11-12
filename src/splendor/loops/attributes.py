@@ -2,7 +2,7 @@
 Loop-level attributes computed from edge attributes.
 """
 import numpy as np
-from splendor.loops import LoopData
+from splendor.loops.census import LoopData
 
 
 def loop_sum(loops: LoopData, edge_values: np.ndarray) -> np.ndarray:
