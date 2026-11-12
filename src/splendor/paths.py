@@ -60,6 +60,10 @@ def basemap05_main_types_path(area: str) -> Path:
 def link_landuse_path(area: str, r: float, r_s: float) -> Path:
     return PROCESSED / area / f"link_landuse_r{r}_rs{r_s}.csv"
 
+# Landuse diversity
+def link_diversity_path(area: str, r: float, r_s: float) -> Path:
+    return PROCESSED / area / f"link_diversity_r{r}_rs{r_s}.csv"
+
 
 # Plots
 def link_landuse_plot_path(area: str, r: float, detail: str = "") -> Path:
