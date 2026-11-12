@@ -5,7 +5,7 @@ from splendor.cli import get_study_area
 from splendor.paths import network_path, link_landuse_path, link_diversity_path
 from splendor.landuse import get_shares_array
 from splendor.config import CORRIDOR_RADIUS, ROAD_STRIP_RADIUS, DIVERSITY_MEASURES
-from splendor.score import get_diversity
+from splendor.diversity import get_diversity
 
 STUDY_AREA = get_study_area()
 NETWORK = network_path(STUDY_AREA)

@@ -2,8 +2,8 @@ import math
 import pytest
 import numpy as np
 
-from splendor import score
-from splendor.score import get_diversity, MEASURES
+from splendor import diversity
+from splendor.diversity import get_diversity, MEASURES
 
 DOMINATED = [.05, .05, .1, .8]
 UNIFORM = [.25, .25, .25, .25]
@@ -15,7 +15,7 @@ NEAR_UNIFORM = [.15, .25, .35, .25]
 @pytest.fixture(autouse=True)
 def fixed_richness_threshold(monkeypatch):
     """Make richness tests independent of the config value."""
-    monkeypatch.setattr(score, "RICHNESS_MIN_SHARE", 0.1)
+    monkeypatch.setattr(diversity, "RICHNESS_MIN_SHARE", 0.1)
 
 
 @pytest.mark.parametrize("measure, shares, expected", [
