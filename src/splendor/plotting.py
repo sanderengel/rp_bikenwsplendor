@@ -11,7 +11,8 @@ from shapely.geometry import box
 from affine import Affine
 from typing import Sequence
 
-from splendor.landuse import get_bounds_window, ALL_TYPES, N_TYPES, SHORT_NAMES
+from splendor.landuse.types import ALL_TYPES, N_TYPES, SHORT_NAMES
+from splendor.landuse.raster import get_bounds_window
 
 
 def _landuse_colormap() -> tuple[list[tuple[float, ...]], ListedColormap, BoundaryNorm]:

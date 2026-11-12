@@ -1,8 +1,10 @@
 from splendor.io import load_network, load_raster
 from splendor.cli import get_study_area
-from splendor.landuse import N_TYPES, ROAD, get_link_corridors, get_link_strips, get_corridor_shares
 from splendor.paths import network_path, basemap05_main_types_path, link_landuse_path
 from splendor.config import CORRIDOR_RADIUS, ROAD_STRIP_RADIUS, EXCLUDED_TYPES
+from splendor.landuse.types import N_TYPES, ROAD
+from splendor.landuse.corridors import get_link_corridors, get_link_strips
+from splendor.landuse.shares import get_corridor_shares
 
 STUDY_AREA = get_study_area()
 NETWORK = network_path(STUDY_AREA)

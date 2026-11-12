@@ -13,7 +13,7 @@ from rasterio.windows import from_bounds
 
 from splendor.io import load_network
 from splendor.cli import get_study_area
-from splendor.landuse import ALL_TYPES, N_TYPES, MAIN_TYPES, UNCLASSIFIED, ROAD_CODE, ROAD
+from splendor.landuse.types import ALL_TYPES, N_TYPES, MAIN_TYPES, UNCLASSIFIED, ROAD_CODE, ROAD
 from splendor.paths import (
     network_path,
     BASEMAP05_LU01_RAW, BASEMAP05_LU01_VAT, # SRC

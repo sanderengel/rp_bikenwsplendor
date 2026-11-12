@@ -3452,7 +3452,7 @@ packages:
 - pypi: ./
   name: splendor
   version: 0.1.0
-  sha256: 5a95b70f977eafd560f2d01e7fef8b9492aa3d907e54ed7b1a9a7f61e2ac64b8
+  sha256: 031a6edc859b016ad312de9291cceb6cf3bce826590e414ef19cc42f03f99665
   requires_python: '>=3.11'
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/sqlite-3.54.1-ha9f7ffe_0.conda
   sha256: 48efa81f1e3601db501467cfc851a071c36649eb4fce466203a2f29901a6cf90

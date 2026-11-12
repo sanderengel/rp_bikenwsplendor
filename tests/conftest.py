@@ -9,7 +9,7 @@ from typing import Callable
 
 from splendor.config import EPSG, SEED
 from splendor.loops import LoopData, get_loops
-from splendor.landuse import N_TYPES, ROAD
+from splendor.landuse.types import N_TYPES, ROAD
 
 # Raster constants
 GRID_SIZE = 100 # Pixels per side

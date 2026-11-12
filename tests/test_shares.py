@@ -3,16 +3,10 @@ import numpy as np
 import pandas as pd
 from rasterio.transform import rowcol
 
-from splendor.landuse import (
-    get_link_strips,
-    get_link_corridors,
-    get_share_column_name,
-    get_corridor_shares,
-    get_shares_array,
-    N_TYPES,
-    ROAD,
-    UNCLASSIFIED
-)
+from splendor.landuse.corridors import get_link_strips, get_link_corridors
+from splendor.landuse.shares import get_share_column_name, get_corridor_shares, get_shares_array
+from splendor.landuse.types import N_TYPES, ROAD, UNCLASSIFIED
+
 
 def test_shares_full_forest(half_raster, make_edges):
     "A line fully in forest area (code 4) should have 'share_4' == 1.0."

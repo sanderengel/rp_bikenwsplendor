@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from shapely import Point, Polygon, LineString, box
 
-from splendor.landuse import get_link_corridor, get_link_corridors, N_TYPES
+from splendor.landuse.corridors import get_link_corridor, get_link_corridors
 
 
 def test_corridors_keep_metadata(make_edges):

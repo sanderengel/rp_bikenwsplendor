@@ -2,7 +2,8 @@ import numpy as np
 from rasterio.features import geometry_mask
 from shapely import LineString
 
-from splendor.landuse import get_link_corridor, get_pixel_values
+from splendor.landuse.corridors import get_link_corridor
+from splendor.landuse.raster import get_pixel_values
 
 
 def test_pixel_values_match_full_mask(random_raster):
