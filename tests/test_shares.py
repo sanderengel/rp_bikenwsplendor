@@ -270,3 +270,110 @@ def test_shares_strips_index_mismatch_error(half_raster, make_edges):
             corridors, raster, transform, N_TYPES, 
             strips=strips, strip_excluded_type=4
         )
+
+
+def test_shares_exclude_type(half_raster, make_edges):
+    """
+    Excluding cropland (code 2) on the forest/cropland boundary leaves only forest,
+    with cropland pixels counted in 'n_excluded'.
+    """
+    x, y = 500, 100
+    L = 200
+    r = 20
+    edges = make_edges([(x, y), (x, y + L)])
+    corridors = get_link_corridors(edges, r)
+
+    raster, transform = half_raster
+    corridor_shares = get_corridor_shares(
+        corridors, raster, transform, N_TYPES,
+        excluded_types=(2,)    
+    )
+    row = corridor_shares.iloc[0]
+
+    assert get_share_column_name(2) not in corridor_shares.columns
+    assert row[get_share_column_name(4)] == 1.0
+    assert row["n_pixels"] == row["n_excluded"] # Half forest half cropland
+
+
+def test_shares_exclude_equals_rescaled(random_raster, make_edges):
+    """
+    Excluding a type equals dropping its share and rescaling the rest by 1 / (1 - its share),
+    and n_pixels + n_excluded equals n_pixels without exclusion.
+    """
+    r = 37
+    edges = make_edges(
+        [(123.4, 217.9), (561.3, 688.2)], # Diagonal, off the pixel grid
+        [(250, 100), (450, 100)]          # Horizontal
+    )
+    corridors = get_link_corridors(edges, r)
+    excluded = UNCLASSIFIED[0]
+    excluded_col = get_share_column_name(excluded)
+
+    raster, transform = random_raster
+    without = get_corridor_shares(corridors, raster, transform, N_TYPES)
+    with_excl = get_corridor_shares(corridors, raster, transform, N_TYPES, excluded_types=(excluded,))
+    assert (without[excluded_col] > 0).all(), "test needs the excluded type in every corridor"
+
+    expected = (
+        get_shares_array(without.drop(columns=excluded_col))
+        / (1 - without[excluded_col].to_numpy())[:, None]
+    )
+    np.testing.assert_allclose(get_shares_array(with_excl), expected)
+    np.testing.assert_array_equal(with_excl["n_pixels"] + with_excl["n_excluded"], without["n_pixels"])
+    assert (without["n_excluded"] == 0).all()
+
+
+def test_shares_exclude_columns(half_raster, make_edges):
+    """Share columns are left out for excluded types and the rest keep their order."""
+    x, y = 250, 100
+    L = 200
+    r = 20
+    edges = make_edges([(x, y), (x + L, y)])
+    corridors = get_link_corridors(edges, r)
+
+    raster, transform = half_raster
+    corridor_shares = get_corridor_shares(corridors, raster, transform, N_TYPES, excluded_types=(13,))
+
+    # Testing the schema itself, so literal names
+    share_column_names = [f"share_{k}" for k in range(1, N_TYPES + 1) if k != 13]
+    assert corridor_shares.columns.to_list() == ["n_pixels", "n_excluded"] + share_column_names
+
+
+def test_shares_exclude_duplicates(random_raster, make_edges):
+    """Duplicate excluded types are counted once."""
+    r = 37
+    edges = make_edges([(250, 100), (450, 100)])
+    corridors = get_link_corridors(edges, r)
+
+    raster, transform = random_raster
+    once = get_corridor_shares(corridors, raster, transform, N_TYPES, excluded_types=(13,))
+    twice = get_corridor_shares(corridors, raster, transform, N_TYPES, excluded_types=(13, 13))
+
+    pd.testing.assert_frame_equal(twice, once)
+
+
+@pytest.mark.parametrize("excluded_types", [(0,), (N_TYPES + 1,), (-1,)])
+def test_shares_exclude_out_of_range_error(half_raster, make_edges, excluded_types):
+    """Excluded types outside 1..N_TYPES should raise a ValueError."""
+    x, y = 250, 100
+    L = 200
+    r = 20
+    edges = make_edges([(x, y), (x + L, y)])
+    corridors = get_link_corridors(edges, r)
+
+    raster, transform = half_raster
+    with pytest.raises(ValueError):
+        get_corridor_shares(corridors, raster, transform, N_TYPES, excluded_types=excluded_types)
+
+
+def test_shares_all_excluded_error(half_raster, make_edges):
+    """A corridor whose pixels are all of excluded types should raise an AssertionError."""
+    x, y = 250, 100
+    L = 200
+    r = 20
+    edges = make_edges([(x, y), (x, y + L)]) # Vertical, fully in forest
+    corridors = get_link_corridors(edges, r)
+
+    raster, transform = half_raster
+    with pytest.raises(AssertionError):
+        get_corridor_shares(corridors, raster, transform, N_TYPES, excluded_types=(4,))
