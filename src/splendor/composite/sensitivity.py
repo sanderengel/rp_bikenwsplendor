@@ -53,7 +53,7 @@ def get_score_grid(
                     "aggregation": aggregation,
                     "weight": w,
                     "score": score,
-                    "rank": rankdata(-score, method="min"), # Highest score gets rank 1
+                    "rank": rankdata(-np.round(score, 12), method="min"), # Highest score gets rank 1
                 }))
 
     return pd.concat(frames, ignore_index=True)
