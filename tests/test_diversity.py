@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 
 from splendor import diversity
-from splendor.diversity import get_diversity, MEASURES
+from splendor.diversity import get_diversity, MEASURES, get_bounds
 
 DOMINATED = [.05, .05, .1, .8]
 UNIFORM = [.25, .25, .25, .25]
@@ -72,3 +72,17 @@ def test_diversity_rows_not_summing_to_one_error():
 def test_diversity_negative_shares_error():
     with pytest.raises(ValueError, match="non-negative"):
         get_diversity(np.array([[1.5, -.5]]), "shannon") # Sums to 1
+
+
+@pytest.mark.parametrize("measure, expected", [
+    ("shannon", (0, math.log(13))),
+    ("inverse_simpson", (1, 13)),
+    ("richness", (1, 10)), # At most 10 types can reach a share of 0.1
+])
+def test_bounds(measure, expected):
+    assert get_bounds(measure, 13, 0.1) == pytest.approx(expected)
+
+
+def test_bounds_unknown_measure_error():
+    with pytest.raises(ValueError, match="not supported"):
+        get_bounds("unknown", 13, 0.1)
