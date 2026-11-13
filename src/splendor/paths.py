@@ -65,6 +65,17 @@ def link_diversity_path(area: str, r: float, r_s: float) -> Path:
     return PROCESSED / area / f"link_diversity_r{r}_rs{r_s}.csv"
 
 
+# Link score
+def link_score_grid_path(area: str, r: float, r_s: float) -> Path:
+    return PROCESSED / area / f"link_score_grid_r{r}_rs{r_s}.csv"
+
+def link_rank_summary_path(area: str, r: float, r_s: float) -> Path:
+    return PROCESSED / area / f"link_rank_summary_r{r}_rs{r_s}.csv"
+
+def link_rank_correlations_path(area: str, r: float, r_s: float) -> Path:
+    return PROCESSED / area / f"link_rank_correlations_r{r}_rs{r_s}.csv"
+
+
 # Plots
 def link_landuse_plot_path(area: str, r: float, detail: str = "") -> Path:
     if detail:
