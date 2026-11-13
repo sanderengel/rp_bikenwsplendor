@@ -14,10 +14,20 @@ STUDY_AREA = "pilot"
 
 EXCLUDED_TYPES = (13,) # 13 is UNCLASSIFIED (see src/splendor/landuse/types.py)
 
-DIVERSITY_MEASURES = ("shannon", "inverse_simpson", "richness") # See src/splendor/diversity.py for supported functions
+DIVERSITY_MEASURES = (
+    # See src/splendor/diversity.py for supported functions
+    "shannon",
+    # "inverse_simpson", # Ranks almost identically to Shannon (see notebooks/exp/link_components.ipynb)
+    "richness"
+) 
 RICHNESS_MIN_SHARE = .1
 
 NORMALIZATION_METHODS = ("bounds", "percentile", "rank") # See src/splendor/composite/normalize.py
 NORMALIZATION_PERCENTILE = 99
 
+POI_BOUNDS = (0, 3) # Theoretical range of POI categories
 GEOMETRIC_FLOOR = 0.25 # Components are lifted to floor + (1 - floor) * x in the geometric mean, so a 0 doesn't zero the score
+
+AGGREGATION_METHODS = ("mean", "geometric") # See src/splendor/composite/aggregate.py
+LAND_USE_WEIGHTS = (0.25, 0.5, 0.75) # Weight of land use in the score, POI gets 1 - w
+REFERENCE_WEIGHTS = (0.0, 1.0) # Single-component rankings (POI only, land use only), kept out of the rank summary
