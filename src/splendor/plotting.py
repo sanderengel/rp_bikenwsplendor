@@ -13,6 +13,7 @@ from typing import Sequence
 
 from splendor.landuse.types import ALL_TYPES, N_TYPES, SHORT_NAMES
 from splendor.landuse.raster import get_bounds_window
+from splendor.landuse.shares import get_share_column_name
 
 
 def _landuse_colormap() -> tuple[list[tuple[float, ...]], ListedColormap, BoundaryNorm]:
@@ -78,8 +79,12 @@ def plot_shares(
     """Horizontal bars of the link's land use shares in fixed type order."""
     colors, _, _ = _landuse_colormap()
 
-    # Extract shares above minimum for the link
-    s = pd.Series({k: row[f"share_{k}"] for k in range(1, N_TYPES + 1)})
+    # Extract shares above minimum for the link, skipping excluded types
+    s = pd.Series({
+        k: row[get_share_column_name(k)]
+        for k in range(1, N_TYPES + 1)
+        if get_share_column_name(k) in row.index
+    })
     s = s[s >= min_share]
 
     # Create rows
