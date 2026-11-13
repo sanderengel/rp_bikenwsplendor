@@ -36,3 +36,14 @@ def get_diversity(shares: np.ndarray, measure_name: str) -> np.ndarray:
 
     measure_func = MEASURES[measure_name]
     return measure_func(shares)
+
+
+def get_bounds(measure_name: str, n_types: int, richness_min_share: float) -> tuple[float, float]:
+    """Theoretical (min, max) of a diversity measure over n_types land use types."""
+    if measure_name == "shannon":
+        return 0.0, float(np.log(n_types))
+    if measure_name == "inverse_simpson":
+        return 1.0, float(n_types)
+    if measure_name == "richness":
+        return 1.0, float(min(n_types, int(1 / richness_min_share))) # At most 1 / threshold types can reach this
+    raise ValueError(f"Measure '{measure_name}' is not supported. Supported measures are {list(MEASURES)}")
