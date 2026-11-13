@@ -88,7 +88,7 @@ def plot_against(
     xlabel: str,
     x_scale_factor: float = 1,
     xscale: str = "linear",
-    panel_size: tuple[float, float] = (4, 3),
+    panel_size: tuple[float, float] = (4, 4),
 ) -> Figure:
     """One scatter panel per y column, all against the same x."""
     fig, axes = plt.subplots(
