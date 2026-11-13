@@ -45,7 +45,10 @@ def plot_distribution(
     ax.hist(values, bins=edges, color=SERIES_COLOR)
     if reference is not None:
         ax.axvline(reference, color="0.4", linestyle="--", linewidth=1)
-        ax.text(reference, ax.get_ylim()[1] * .95, f" {reference_label}", color="0.4", fontsize=8, va="top")
+        ax.text(
+            reference, ax.get_ylim()[1] * .95, f"{reference_label} ",
+            color="0.4", fontsize=8, va="top", ha="right", rotation=90,
+        )
     ax.set(title=title, xlabel="Value", ylabel="Links")
     clean_axes(ax)
 
@@ -64,7 +67,7 @@ def plot_distributions(
     references: Sequence[float | None] | None = None,
     reference_label: str = "",
     integer_columns: Sequence[str] = (),
-    panel_size: tuple[float, float] = (4, 3),
+    panel_size: tuple[float, float] = (4, 4),
 ) -> Figure:
     """One histogram per column, side by side."""
     references = references or [None] * len(columns)
