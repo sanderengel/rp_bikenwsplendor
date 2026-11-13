@@ -27,7 +27,7 @@ MEASURES = {
 # Diversity measure caller
 def get_diversity(shares: np.ndarray, measure_name: str) -> np.ndarray:
     if measure_name not in MEASURES:
-        raise ValueError(f"Measure '{measure_name}' is not supported. Supported measures are {list(MEASURES.keys())}")
+        raise ValueError(f"Measure '{measure_name}' is not supported. Supported measures are {list(MEASURES)}")
     row_sums = shares.sum(axis=1)
     if not np.allclose(row_sums, 1):
         raise ValueError("shares must sum to 1 per row")
