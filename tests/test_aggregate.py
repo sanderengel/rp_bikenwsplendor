@@ -50,3 +50,18 @@ def test_aggregate_unknown_method_error():
 def test_aggregate_weights_not_summing_to_one_error():
     with pytest.raises(ValueError, match="sum to 1"):
         aggregate(MATRIX, "mean", [0.5, 0.6])
+
+
+def test_aggregate_geometric_floor():
+    """With a floor, a component at 0 is lifted to the floor instead of zeroing the geometric mean."""
+    result = aggregate(MATRIX, "geometric", EQUAL, floor=0.25)
+    expected = np.sqrt((0.25 + 0.75 * MATRIX[:, 0]) * (0.25 + 0.75 * MATRIX[:, 1]))
+    np.testing.assert_allclose(result, expected)
+    assert result[0] > 0 # Link A has no POI
+
+
+def test_aggregate_floor_keeps_mean_ranking():
+    """For the mean, the floor rescales the scores but doesn't change their order."""
+    without_floor = aggregate(MATRIX, "mean", EQUAL)
+    with_floor = aggregate(MATRIX, "mean", EQUAL, floor=0.25)
+    np.testing.assert_array_equal(np.argsort(with_floor), np.argsort(without_floor))

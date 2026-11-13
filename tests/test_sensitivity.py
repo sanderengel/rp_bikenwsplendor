@@ -72,3 +72,15 @@ def test_rank_correlations_shape_and_diagonal(grid):
     correlations = get_rank_correlations(grid)
     assert correlations.shape == (N_COMBINATIONS, N_COMBINATIONS)
     np.testing.assert_allclose(np.diag(correlations.to_numpy()), 1)
+
+
+def test_grid_near_tied_scores_share_rank():
+    """Scores that are equal up to float rounding share a rank."""
+    components = pd.DataFrame({ # 0.5 * (0.1 + 0.2) and 0.5 * 0.3 differ only by float rounding
+        "edge_id": [1, 2],
+        "diversity_shannon": [0.1, 0.3],
+        "poi_diversity": [0.2, 0.0],
+    })
+    bounds = {"diversity_shannon": (0, 1), "poi_diversity": (0, 1)}
+    grid = get_score_grid(components, ["shannon"], ["bounds"], ["mean"], [0.5], bounds, p=99, geometric_floor=0.25)
+    assert grid["rank"].to_list() == [1, 1]
