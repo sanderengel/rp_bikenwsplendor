@@ -21,7 +21,7 @@ AGGREGATIONS = {
 }
 
 
-def aggregate(matrix: np.ndarray, method: str, weights: Sequence[float]) -> np.ndarray:
+def aggregate(matrix: np.ndarray, method: str, weights: Sequence[float], floor: float = 0.0) -> np.ndarray:
     """
     Aggregate normalized components (links x components, values in [0, 1]) into a single score.
     Weights are one per component, non-negative, and sum to 1.    
@@ -45,5 +45,9 @@ def aggregate(matrix: np.ndarray, method: str, weights: Sequence[float]) -> np.n
     if not np.isclose(weights.sum(), 1):
         raise ValueError(f"weights must sum to 1, got {weights.sum():.4g}")
 
+    if not 0 <= floor < 1:
+        raise ValueError(f"floor must be in [0, 1), got {floor}")
+
+    matrix = floor + (1 - floor) * np.clip(matrix, 0, 1)
     aggregate_func = AGGREGATIONS[method]
     return aggregate_func(matrix, weights)

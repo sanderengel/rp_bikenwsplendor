@@ -19,6 +19,7 @@ def get_score_grid(
     land_use_weights: Sequence[float],
     bounds: dict[str, tuple[float, float]],
     p: float,
+    geometric_floor: float,
     poi_column: str = "poi_diversity",
 ) -> pd.DataFrame:
     """
@@ -43,7 +44,8 @@ def get_score_grid(
             matrix = np.column_stack([land_use_normalized[normalization], poi_normalized[normalization]])
 
             for aggregation, w in product(aggregations, land_use_weights):
-                score = aggregate(matrix, aggregation, [w, 1 - w])
+                floor = geometric_floor if aggregation == "geometric" else 0.0
+                score = aggregate(matrix, aggregation, [w, 1 - w], floor)
                 frames.append(pd.DataFrame({
                     "edge_id": edge_ids,
                     "measure": measure,

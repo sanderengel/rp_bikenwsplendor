@@ -19,3 +19,5 @@ RICHNESS_MIN_SHARE = .1
 
 NORMALIZATION_METHODS = ("bounds", "percentile", "rank") # See src/splendor/composite/normalize.py
 NORMALIZATION_PERCENTILE = 99
+
+GEOMETRIC_FLOOR = 0.25 # Components are lifted to floor + (1 - floor) * x in the geometric mean, so a 0 doesn't zero the score
