@@ -37,7 +37,7 @@ def components() -> pd.DataFrame:
 
 @pytest.fixture
 def grid(components) -> pd.DataFrame:
-    return get_score_grid(components, MEASURES, NORMALIZATIONS, AGGREGATIONS, WEIGHTS, BOUNDS, P)
+    return get_score_grid(components, MEASURES, NORMALIZATIONS, AGGREGATIONS, WEIGHTS, BOUNDS, P, 0.25)
 
 
 def test_grid_covers_every_combination_for_every_link(grid, components):
