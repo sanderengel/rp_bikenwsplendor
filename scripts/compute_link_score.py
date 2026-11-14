@@ -9,6 +9,7 @@ from splendor.paths import (
     link_score_grid_path,
     link_rank_summary_path,
     link_rank_correlations_path,
+    link_splendor_path
 )
 from splendor.config import (
     CORRIDOR_RADIUS,
@@ -23,6 +24,7 @@ from splendor.config import (
     AGGREGATION_METHODS,
     LAND_USE_WEIGHTS,
     REFERENCE_WEIGHTS,
+    MAIN_SPECIFICATION
 )
 from splendor.landuse.types import N_TYPES
 from splendor.diversity import get_bounds
@@ -60,6 +62,16 @@ grid = get_score_grid(
 summary = summarize_ranks(grid[grid["weight"].isin(LAND_USE_WEIGHTS)])
 correlations = get_rank_correlations(grid)
 
-grid.to_csv(link_score_grid_path(STUDY_AREA, CORRIDOR_RADIUS, ROAD_STRIP_RADIUS), index=False)
-summary.to_csv(link_rank_summary_path(STUDY_AREA, CORRIDOR_RADIUS, ROAD_STRIP_RADIUS), index=False)
-correlations.to_csv(link_rank_correlations_path(STUDY_AREA, CORRIDOR_RADIUS, ROAD_STRIP_RADIUS))
+# Filter to main specification to get final splendor scores
+splendor = grid.copy()
+for column, choice in MAIN_SPECIFICATION.items():
+    splendor = splendor[splendor[column] == choice]
+splendor = splendor[["edge_id", "score", "rank"]]
+assert splendor["edge_id"].is_unique
+assert set(splendor["edge_id"]) == set(edges["edge_id"]), "main specification must match exactly one combination in the grid"
+
+path_args = (STUDY_AREA, CORRIDOR_RADIUS, ROAD_STRIP_RADIUS)
+grid.to_csv(link_score_grid_path(*path_args), index=False)
+summary.to_csv(link_rank_summary_path(*path_args), index=False)
+correlations.to_csv(link_rank_correlations_path(*path_args))
+splendor.to_csv(link_splendor_path(*path_args), index=False)

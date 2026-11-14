@@ -31,3 +31,10 @@ GEOMETRIC_FLOOR = 0.25 # Components are lifted to floor + (1 - floor) * x in the
 AGGREGATION_METHODS = ("mean", "geometric") # See src/splendor/composite/aggregate.py
 LAND_USE_WEIGHTS = (0.25, 0.5, 0.75) # Weight of land use in the score, POI gets 1 - w
 REFERENCE_WEIGHTS = (0.0, 1.0) # Single-component rankings (POI only, land use only), kept out of the rank summary
+
+MAIN_SPECIFICATION = {
+    "measure": "shannon",
+    "normalization": "percentile",
+    "aggregation": "mean",
+    "weight": 0.75
+}

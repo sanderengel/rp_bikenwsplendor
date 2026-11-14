@@ -75,6 +75,9 @@ def link_rank_summary_path(area: str, r: float, r_s: float) -> Path:
 def link_rank_correlations_path(area: str, r: float, r_s: float) -> Path:
     return PROCESSED / area / f"link_rank_correlations_r{r}_rs{r_s}.csv"
 
+def link_splendor_path(area: str, r: float, r_s: float) -> Path:
+    return PROCESSED / area / f"link_splendor_r{r}_rs{r_s}.csv"
+
 
 # Plots
 def link_landuse_plot_path(area: str, r: float, detail: str = "") -> Path:
