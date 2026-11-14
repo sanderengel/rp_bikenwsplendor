@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import geopandas as gpd
 import igraph as ig
 import rasterio
@@ -56,3 +57,16 @@ def load_raster(path: str | Path) -> tuple[np.ndarray, Affine, CRS]:
         transform = src.transform # Affine mapping pixels to map coords
         raster_crs = src.crs
     return raster, transform, raster_crs
+
+
+def load_rank_correlations(path: str | Path) -> pd.DataFrame:
+    """Rank correlation matrix with (measure, normalization, aggregation, weight) labels on both axes."""
+    corr = pd.read_csv(path, header=[0, 1, 2, 3], index_col=[0, 1, 2, 3])
+    labels = pd.MultiIndex.from_tuples(
+        [(m, n, a, float(w)) for m, n, a, w in corr.index],
+        names=["measure", "normalization", "aggregation", "weight"]
+    )
+    # Same combinations in the same order on both axes
+    corr.index = labels
+    corr.columns = labels
+    return corr
