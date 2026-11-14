@@ -27,6 +27,28 @@ def _landuse_colormap() -> tuple[list[tuple[float, ...]], ListedColormap, Bounda
     return colors, cmap, norm
 
 
+def _link_title(
+    edge_id: int,
+    length_km: float,
+    n_pixels: int,
+    rank: int | None = None,
+    score: float | None = None,
+    detail: str | None = None
+) -> str:
+    """
+    Panel title: "Link id (length, pixels)" on one line, or with a rank, score or detail
+    "#rank: Link id (score s)" and "length, pixels[, detail]" on two lines.
+    """
+    parts = [f"{length_km:.1f} km", f"{n_pixels:,} pixels"] + ([detail] if detail else [])
+    details_text = f"{', '.join(parts)}"
+    if rank is None and score is None and detail is None:
+        return f"Link {edge_id} ({details_text})"
+    first = f"#{rank}: Link {edge_id}" if rank is not None else f"Link {edge_id}"
+    if score is not None:
+        first += f" (score {score:.2f})"
+    return f"{first}\n{details_text}"
+
+
 def get_map_extent(geom: Geometry, margin: float) -> tuple[float, float, float, float]:
     """Square extent around a geometry padded by 'margin' of its larger side."""
     minx, miny, maxx, maxy = geom.bounds
@@ -111,6 +133,9 @@ def plot_link_landuse_grid(
     shares: pd.DataFrame,
     raster: np.ndarray,
     transform: Affine,
+    ranks: pd.Series | None = None,   # Indexed by edge_id
+    scores: pd.Series | None = None,  # Indexed by edge_id
+    details: pd.Series | None = None, # Indexed by edge_id
     n_cols: int = 4,
     title: str | None = None,
     min_share: float = .01,
@@ -132,11 +157,15 @@ def plot_link_landuse_grid(
         ax_map, ax_bar = subfig.subplots(1, 2, width_ratios=[map_width_ratio, 1])
 
         plot_landuse_map(ax_map, raster, transform, line, corridors.iloc[edge_id], margin)
-        n_pixels = int(shares.at[edge_id, "n_pixels"])
-        ax_map.set_title(
-            f"Link {edge_id} ({line.length / 1000:.1f} km, {n_pixels:,} pixels)",
-            fontsize=10, loc="left"
+        title = _link_title(
+            edge_id,
+            line.length / 1000, # m to km
+            int(shares.at[edge_id, "n_pixels"]),
+            rank=int(ranks[edge_id]) if ranks is not None else None,
+            score=float(scores[edge_id]) if scores is not None else None,
+            detail=details[edge_id] if details is not None else None
         )
+        ax_map.set_title(title, fontsize=10, loc="left")
 
         plot_shares(ax_bar, shares.loc[edge_id], min_share, map_width_ratio)
 
